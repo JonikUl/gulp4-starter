@@ -1,6 +1,6 @@
 const app = 'app/',
     build = 'build/';
-const {src, dest, parallel, series} = require('gulp'),
+const {src, dest, parallel, series, watch} = require('gulp'),
     sass = require('gulp-sass'),
     uglify = require('gulp-uglify'),
     concat = require('gulp-concat'),
@@ -12,7 +12,7 @@ const {src, dest, parallel, series} = require('gulp'),
     babel = require('gulp-babel'),
     imagemin = require('gulp-imagemin');
 
-function css() {
+const css = _ => {
     return src(app + 'scss/**/*.scss')
         .pipe(concat('main.min.css'))
         .pipe(sourcemaps.init())
@@ -23,18 +23,17 @@ function css() {
         done();
 }
 
-function delBuild() {
-    return del([build + '*']);
-    done();
+const delBuild = _ => {
+    return del([build + '**/*.*']);
 }
 
-function pugToHtml() {
+const pugToHtml = _ => {
     return src(app + 'pug/**/*.pug')
         .pipe(pug())
         .pipe(dest(build));
 }
 
-function jsCompiled() {
+const jsCompiled = _ => {
     return src([
         app + 'js/**/*.js',
         'node_modules/materialize-css/dist/js/materialize.min.js'
@@ -48,12 +47,12 @@ function jsCompiled() {
     done();
 }
 
-function watch() {
-    gulp.watch(app + 'scss/**/*.scss', parallel('css'));
-    gulp.watch(app + 'js/**/*.js', parallel('jsCompiled'));
-    gulp.watch(app + 'pug/**/*.pug', parallel('pugToHtml'));
+const watchAll = _ => {
+    watch(app + 'scss/**/*.scss', parallel('css'));
+    watch(app + 'js/**/*.js', parallel('jsCompiled'));
+    watch(app + 'pug/**/*.pug', parallel('pugToHtml'));
 }
-function image() {
+const image = _ => {
     del([build + 'img/*'])
     return src(app + 'img/*')
         .pipe(imagemin([
@@ -72,7 +71,8 @@ function image() {
 exports.css = css;
 exports.jsCompiled = jsCompiled;
 exports.pugToHtml = pugToHtml;
-exports.watch = watch;
+exports.watchAll = watchAll;
+exports.delBuild = delBuild;
 exports.image = image;
 exports.build = series(delBuild,
                         parallel(css, jsCompiled, pugToHtml)
